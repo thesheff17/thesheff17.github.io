@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>AWS SAM - (Serverless Application Model) | Dan Sheffner Tech Info</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.71.1" />
+<meta name="description" content="Made by &lt;a href=&#34;&#34;&gt;Blog Author&lt;/a&gt;">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/index.css">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/classes.css">
+<link rel="canonical" href="https://tech.sheffner.com/posts/2020-05-27-aws-sam-serverless-application-model/">
+<link rel="alternate" type="application/rss+xml" href="" title="Dan Sheffner Tech Info">
+
+<body>
+
+<header class="icons">
+  
+    <a href="https://tech.sheffner.com/">Dan Sheffner Tech Info</a>
+  
+  
+  
+    <div class="hidden description">Made by <a href="">Blog Author</a></div>
+  
+</header>
+
+<article>
+  <header>
+    <h1>AWS SAM - (Serverless Application Model)</h1>
+    <time datetime="2020-05-27T22:05:55-05:00">May 27, 2020</time>
+  </header>
+  <p>More information for SAM can be located <a href="https://aws.amazon.com/serverless/sam/">here.</a></p>
+<p>Installation for mac and linux:</p>
+<pre><code>sh -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)&quot;
+</code></pre><p>add to your .bash_profile</p>
+<pre><code>test -d ~/.linuxbrew &amp;&amp; eval $(~/.linuxbrew/bin/brew shellenv)
+test -d /home/linuxbrew/.linuxbrew &amp;&amp; eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+test -r ~/.bash_profile &amp;&amp; echo &quot;eval \$($(brew --prefix)/bin/brew shellenv)&quot; &gt;&gt;~/.bash_profile
+echo &quot;eval \$($(brew --prefix)/bin/brew shellenv)&quot; &gt;&gt;~/.profile
+</code></pre><p>now install tools:</p>
+<pre><code>brew tap aws/tap
+brew install aws-sam-cli
+</code></pre><p>check version:</p>
+<pre><code>sam --version
+SAM CLI, version 0.52.0
+</code></pre><p>if you need to upgrade package:</p>
+<pre><code>brew upgrade aws-sam-cli
+</code></pre><p>start a new project:</p>
+<pre><code>sam init
+</code></pre>
+</article>
+
+
+
+</body>
+
+</html>
