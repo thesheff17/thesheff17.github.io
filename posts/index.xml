@@ -26,11 +26,11 @@ sam --version SAM CLI, version 0.52.0 if you need to upgrade package:</descripti
     </item>
     
     <item>
-      <title>Made Wth Hugo</title>
-      <link>https://tech.sheffner.com/posts/2020-05-27-made-wth-hugo/</link>
+      <title>Made With Hugo</title>
+      <link>https://tech.sheffner.com/posts/2020-05-27-made-with-hugo/</link>
       <pubDate>Wed, 27 May 2020 21:16:12 -0500</pubDate>
       
-      <guid>https://tech.sheffner.com/posts/2020-05-27-made-wth-hugo/</guid>
+      <guid>https://tech.sheffner.com/posts/2020-05-27-made-with-hugo/</guid>
       <description>This site is made with a static site generator named hugo.
 Basic commands:
 installation

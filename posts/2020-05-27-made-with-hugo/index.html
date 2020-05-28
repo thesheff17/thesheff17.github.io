@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>Made With Hugo | Dan Sheffner Tech Info</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.71.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/index.css">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/classes.css">
+<link rel="canonical" href="https://tech.sheffner.com/posts/2020-05-27-made-with-hugo/">
+<link rel="alternate" type="application/rss+xml" href="" title="Dan Sheffner Tech Info">
+
+<body>
+
+<header class="icons">
+  
+    <a href="https://tech.sheffner.com/">Dan Sheffner Tech Info</a>
+  
+  
+  
+</header>
+
+<article>
+  <header>
+    <h1>Made With Hugo</h1>
+    <time datetime="2020-05-27T21:16:12-05:00">May 27, 2020</time>
+  </header>
+  <p>This site is made with a static site generator named <a href="https://gohugo.io/">hugo.</a></p>
+<p>Basic commands:</p>
+<p>installation</p>
+<pre><code>brew install hugo
+</code></pre><p>at the time of writting this:</p>
+<pre><code>hugo version
+Hugo Static Site Generator v0.71.1/extended darwin/amd64 BuildDate: unknown
+</code></pre><p>start a new site:</p>
+<pre><code>hugo new site blog
+cd blog
+</code></pre><p>add a theme</p>
+<pre><code>git clone https://github.com/niklasbuschmann/contrast-hugo.git themes/contract-hugo
+</code></pre><p>add theme to config.yaml</p>
+<pre><code>echo 'theme: &quot;contrast-hugo&quot;' &gt;&gt; config.yaml
+</code></pre><p>add your first post:</p>
+<pre><code>hugo new posts/2020-05-27-my-first-post.md
+</code></pre><p>edit the contents of the post:</p>
+<pre><code>vi content/posts/2020-05-27-my-first-post.md
+</code></pre><p>serve the contents of the directory</p>
+<pre><code>hugo server -D
+</code></pre><p>finally generate static content to public directory</p>
+<pre><code>hugo -D
+</code></pre><p>required to get working on github.<br>
+Part of the config.yaml</p>
+<pre><code>baseURL: &quot;https://thesheff17.github.io/&quot;
+</code></pre>
+</article>
+
+
+
+</body>
+
+</html>
