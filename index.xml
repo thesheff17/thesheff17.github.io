@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Dan Sheffner Tech Info</title>
-    <link>/</link>
+    <link>https://thesheff17.github.io//</link>
     <description>Recent content on Dan Sheffner Tech Info</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 27 May 2020 20:34:37 -0500</lastBuildDate>
     
-	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://thesheff17.github.io//index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>My First Post</title>
-      <link>/posts/2020-05-27-my-first-post/</link>
+      <link>https://thesheff17.github.io//posts/2020-05-27-my-first-post/</link>
       <pubDate>Wed, 27 May 2020 20:34:37 -0500</pubDate>
       
-      <guid>/posts/2020-05-27-my-first-post/</guid>
+      <guid>https://thesheff17.github.io//posts/2020-05-27-my-first-post/</guid>
       <description>hello world. Lets test some markdown
 !#/bin/bash echo &amp;quot;hello&amp;quot; this is a test </description>
     </item>
