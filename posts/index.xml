@@ -2,31 +2,44 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Dan Sheffner Tech Info</title>
-    <link>https://thesheff17.github.io/posts/</link>
+    <link>https://tech.sheffner.com/posts/</link>
     <description>Recent content in Posts on Dan Sheffner Tech Info</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 27 May 2020 21:16:12 -0500</lastBuildDate>
+    <lastBuildDate>Wed, 27 May 2020 22:05:55 -0500</lastBuildDate>
     
-	<atom:link href="https://thesheff17.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://tech.sheffner.com/posts/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>AWS SAM - (Serverless Application Model)</title>
+      <link>https://tech.sheffner.com/posts/2020-05-27-aws-sam-serverless-application-model/</link>
+      <pubDate>Wed, 27 May 2020 22:05:55 -0500</pubDate>
+      
+      <guid>https://tech.sheffner.com/posts/2020-05-27-aws-sam-serverless-application-model/</guid>
+      <description>More information for SAM can be located here.
+Installation for mac and linux:
+sh -c &amp;quot;$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)&amp;quot; add to your .bash_profile
+test -d ~/.linuxbrew &amp;amp;&amp;amp; eval $(~/.linuxbrew/bin/brew shellenv) test -d /home/linuxbrew/.linuxbrew &amp;amp;&amp;amp; eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) test -r ~/.bash_profile &amp;amp;&amp;amp; echo &amp;quot;eval \$($(brew --prefix)/bin/brew shellenv)&amp;quot; &amp;gt;&amp;gt;~/.bash_profile echo &amp;quot;eval \$($(brew --prefix)/bin/brew shellenv)&amp;quot; &amp;gt;&amp;gt;~/.profile now install tools:
+brew tap aws/tap brew install aws-sam-cli check version:
+sam --version SAM CLI, version 0.52.0 if you need to upgrade package:</description>
+    </item>
+    
+    <item>
       <title>Made Wth Hugo</title>
-      <link>https://thesheff17.github.io/posts/2020-05-27-made-wth-hugo/</link>
+      <link>https://tech.sheffner.com/posts/2020-05-27-made-wth-hugo/</link>
       <pubDate>Wed, 27 May 2020 21:16:12 -0500</pubDate>
       
-      <guid>https://thesheff17.github.io/posts/2020-05-27-made-wth-hugo/</guid>
+      <guid>https://tech.sheffner.com/posts/2020-05-27-made-wth-hugo/</guid>
       <description>This site is made with a static site generator named hugo.
 Basic commands:
 installation
-brew install hugo start a new site:
+brew install hugo at the time of writting this:
+hugo version Hugo Static Site Generator v0.71.1/extended darwin/amd64 BuildDate: unknown start a new site:
 hugo new site blog cd blog add a theme
 git clone https://github.com/niklasbuschmann/contrast-hugo.git themes/contract-hugo add theme to config.yaml
 echo &#39;theme: &amp;quot;contrast-hugo&amp;quot;&#39; &amp;gt;&amp;gt; config.yaml add your first post:
-hugo new posts/2020-05-27-my-first-post.md edit the contents of the post:
-vi content/posts/2020-05-27-my-first-post.md serve the contents of the directory
-hugo server -D finally generate static content to public directory</description>
+hugo new posts/2020-05-27-my-first-post.md edit the contents of the post:</description>
     </item>
     
   </channel>

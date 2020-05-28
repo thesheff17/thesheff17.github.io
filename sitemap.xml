@@ -3,26 +3,31 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://thesheff17.github.io/</loc>
+    <loc>https://tech.sheffner.com/posts/2020-05-27-aws-sam-serverless-application-model/</loc>
+    <lastmod>2020-05-27T22:05:55-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://tech.sheffner.com/</loc>
+    <lastmod>2020-05-27T22:05:55-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://tech.sheffner.com/posts/</loc>
+    <lastmod>2020-05-27T22:05:55-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://tech.sheffner.com/posts/2020-05-27-made-wth-hugo/</loc>
     <lastmod>2020-05-27T21:16:12-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://thesheff17.github.io/posts/2020-05-27-made-wth-hugo/</loc>
-    <lastmod>2020-05-27T21:16:12-05:00</lastmod>
+    <loc>https://tech.sheffner.com/categories/</loc>
   </url>
   
   <url>
-    <loc>https://thesheff17.github.io/posts/</loc>
-    <lastmod>2020-05-27T21:16:12-05:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://thesheff17.github.io/categories/</loc>
-  </url>
-  
-  <url>
-    <loc>https://thesheff17.github.io/tags/</loc>
+    <loc>https://tech.sheffner.com/tags/</loc>
   </url>
   
 </urlset>

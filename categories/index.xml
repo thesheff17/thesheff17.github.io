@@ -2,12 +2,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on Dan Sheffner Tech Info</title>
-    <link>https://thesheff17.github.io/categories/</link>
+    <link>https://tech.sheffner.com/categories/</link>
     <description>Recent content in Categories on Dan Sheffner Tech Info</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     
-	<atom:link href="https://thesheff17.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://tech.sheffner.com/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
   </channel>
