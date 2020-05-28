@@ -2,23 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Dan Sheffner Tech Info</title>
-    <link>https://thesheff17.github.io//posts/</link>
+    <link>https://thesheff17.github.io/posts/</link>
     <description>Recent content in Posts on Dan Sheffner Tech Info</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 27 May 2020 20:34:37 -0500</lastBuildDate>
+    <lastBuildDate>Wed, 27 May 2020 21:16:12 -0500</lastBuildDate>
     
-	<atom:link href="https://thesheff17.github.io//posts/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://thesheff17.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>My First Post</title>
-      <link>https://thesheff17.github.io//posts/2020-05-27-my-first-post/</link>
-      <pubDate>Wed, 27 May 2020 20:34:37 -0500</pubDate>
+      <title>Made Wth Hugo</title>
+      <link>https://thesheff17.github.io/posts/2020-05-27-made-wth-hugo/</link>
+      <pubDate>Wed, 27 May 2020 21:16:12 -0500</pubDate>
       
-      <guid>https://thesheff17.github.io//posts/2020-05-27-my-first-post/</guid>
-      <description>hello world. Lets test some markdown
-!#/bin/bash echo &amp;quot;hello&amp;quot; this is a test </description>
+      <guid>https://thesheff17.github.io/posts/2020-05-27-made-wth-hugo/</guid>
+      <description>This site is made with a static site generator named hugo.
+Basic commands:
+installation
+brew install hugo start a new site:
+hugo new site blog cd blog add a theme
+git clone https://github.com/niklasbuschmann/contrast-hugo.git themes/contract-hugo add theme to config.yaml
+echo &#39;theme: &amp;quot;contrast-hugo&amp;quot;&#39; &amp;gt;&amp;gt; config.yaml add your first post:
+hugo new posts/2020-05-27-my-first-post.md edit the contents of the post:
+vi content/posts/2020-05-27-my-first-post.md serve the contents of the directory
+hugo server -D finally generate static content to public directory</description>
     </item>
     
   </channel>
