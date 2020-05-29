@@ -193,7 +193,10 @@ app.js  1.05 KiB       <span style="color:#ae81ff">0</span>  <span style="color:
 Entrypoint main <span style="color:#f92672">=</span> app.js
 <span style="color:#f92672">[</span>0<span style="color:#f92672">]</span> ./src/app.ts 1.02 KiB <span style="color:#f92672">{</span>0<span style="color:#f92672">}</span> <span style="color:#f92672">[</span>built<span style="color:#f92672">]</span>
 </code></pre></div><p>You will now have a build folder with all your js scripts.</p>
-
+<p>Debugging an endpoint:
+This requires <a href="https://www.docker.com/">docker</a> to be running.  Please configure before running the next command:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sam local invoke -d <span style="color:#ae81ff">5858</span> -e events/event.json HelloWorldFunction
+</code></pre></div>
 </article>
 
 
