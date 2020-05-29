@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>AWS SAM (Serverless Application Model) With Typescript | Dan Sheffner Tech Info</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.71.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/index.css">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/classes.css">
+<link rel="canonical" href="https://tech.sheffner.com/posts/2020-05-28-aws-sam-serverless-application-model-with-typscript/">
+<link rel="alternate" type="application/rss+xml" href="" title="Dan Sheffner Tech Info">
+
+<body>
+
+<header class="icons">
+  
+    <a href="https://tech.sheffner.com/">Dan Sheffner Tech Info</a>
+  
+  
+  
+</header>
+
+<article>
+  <header>
+    <h1>AWS SAM (Serverless Application Model) With Typescript</h1>
+    <time datetime="2020-05-28T15:29:00-05:00">May 28, 2020</time>
+  </header>
+  <p>More information for SAM can be located <a href="https://aws.amazon.com/serverless/sam/">here.</a></p>
+<p>Installation for mac and linux:</p>
+<pre><code>sh -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)&quot;
+</code></pre><p>add to your .bash_profile</p>
+<pre><code>test -d ~/.linuxbrew &amp;&amp; eval $(~/.linuxbrew/bin/brew shellenv)
+test -d /home/linuxbrew/.linuxbrew &amp;&amp; eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+test -r ~/.bash_profile &amp;&amp; echo &quot;eval \$($(brew --prefix)/bin/brew shellenv)&quot; &gt;&gt;~/.bash_profile
+echo &quot;eval \$($(brew --prefix)/bin/brew shellenv)&quot; &gt;&gt;~/.profile
+</code></pre><p>now install tools:</p>
+<pre><code>brew tap aws/tap
+brew install aws-sam-cli
+</code></pre><p>check version:</p>
+<pre><code>sam --version
+SAM CLI, version 0.52.0
+</code></pre><p>if you need to upgrade package:</p>
+<pre><code>brew upgrade aws-sam-cli
+</code></pre><p>start a new project:</p>
+<pre><code>sam init
+Which template source would you like to use?
+        1 - AWS Quick Start Templates
+        2 - Custom Template Location
+Choice: 1
+
+Which runtime would you like to use?
+        1 - nodejs12.x
+        2 - python3.8
+        3 - ruby2.7
+        4 - go1.x
+        5 - java11
+        6 - dotnetcore3.1
+        7 - nodejs10.x
+        8 - python3.7
+        9 - python3.6
+        10 - python2.7
+        11 - ruby2.5
+        12 - java8
+        13 - dotnetcore2.1
+Runtime: 1
+
+Project name [sam-app]:
+
+Cloning app templates from https://github.com/awslabs/aws-sam-cli-app-templates.git
+
+AWS quick start application templates:
+        1 - Hello World Example
+        2 - Step Functions Sample App (Stock Trader)
+        3 - Quick Start: From Scratch
+        4 - Quick Start: Scheduled Events
+        5 - Quick Start: S3
+        6 - Quick Start: SNS
+        7 - Quick Start: SQS
+        8 - Quick Start: Web Backend
+Template selection: 1
+
+-----------------------
+Generating application:
+-----------------------
+Name: sam-app
+Runtime: nodejs12.x
+Dependency Manager: npm
+Application Template: hello-world
+Output Directory: .
+
+Next steps can be found in the README file at ./sam-app/README.md
+</code></pre><p>Now lets create a new npm package</p>
+<pre><code>cd sam-app
+thesheff17 in ~/test/serverless/sam-app  &gt; npm init
+This utility will walk you through creating a package.json file.
+It only covers the most common items, and tries to guess sensible defaults.
+
+See `npm help json` for definitive documentation on these fields
+and exactly what they do.
+
+Use `npm install &lt;pkg&gt;` afterwards to install a package and
+save it as a dependency in the package.json file.
+
+Press ^C at any time to quit.
+package name: (sam-app)
+version: (1.0.0)
+description:
+entry point: (index.js)
+test command:
+git repository:
+keywords:
+author:
+license: (ISC)
+About to write to ~/test/serverless/sam-app/package.json:
+
+{
+  &quot;name&quot;: &quot;sam-app&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;description&quot;: &quot;This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.&quot;,
+  &quot;main&quot;: &quot;index.js&quot;,
+  &quot;scripts&quot;: {
+    &quot;test&quot;: &quot;echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1&quot;
+  },
+  &quot;author&quot;: &quot;&quot;,
+  &quot;license&quot;: &quot;ISC&quot;
+}
+
+
+Is this OK? (yes)
+thesheff17 in ~/test/serverless/sam-app  &gt;
+</code></pre><p>Now this information comes from this site <a href="https://www.goingserverless.com/blog/building-apps-with-sam-typescript-and-vscode-debugging">here.</a>
+Now lets install some npm modules:</p>
+<pre><code>npm install @babel/core @babel/preset-env @types/aws-lambda babel-loader ts-loader typescript webpack webpack-cli webpack-node-externals --save-dev 
+npm install source-map-support
+</code></pre><p>now lets create a webpack.config.js:</p>
+<pre><code>const nodeExternals = require('webpack-node-externals');
+
+module.exports = {
+  devtool: &quot;source-map&quot;,
+  resolve: {
+    extensions: [&quot;.js&quot;, &quot;.ts&quot;]
+  },
+  output: {
+    libraryTarget: 'commonjs2'
+  },
+  target: &quot;node&quot;,
+  externals: [nodeExternals()],
+  module: {
+    rules: [
+      {
+        test: /\.m?js$/,
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: &quot;babel-loader&quot;,
+          options: {
+            presets: [&quot;@babel/preset-env&quot;]
+          }
+        }
+      },
+      {
+        test: /\.ts?$/,
+        loader: &quot;ts-loader&quot;
+      }
+    ]
+  },
+
+  mode: &quot;development&quot;
+};
+</code></pre><p>now lets add a tsconfig.json inside the hello-world folder.
+The below commands are inside the hello-world directory:</p>
+<pre><code>{
+  &quot;compilerOptions&quot;: {
+    &quot;target&quot;: &quot;es2015&quot;,
+    &quot;module&quot;: &quot;commonjs&quot;,
+    &quot;allowJs&quot;: true,
+    &quot;checkJs&quot;: true,
+    &quot;sourceMap&quot;: true,
+    &quot;esModuleInterop&quot;: true
+  },
+  &quot;include&quot;: [&quot;src/**/*&quot;]
+}
+</code></pre><p>now lets convert project to a typescript project:</p>
+<pre><code>mkdir src
+mv app.js src/app.ts
+</code></pre><p>now lets build:</p>
+<pre><code>npx webpack-cli src/app.ts -c webpack.config.js -o build/app.js
+npx: installed 204 in 5.951s
+Hash: 76209b7084a1fc1b513b
+Version: webpack 4.43.0
+Time: 179ms
+Built at: 05/28/2020 8:42:31 PM
+ Asset      Size  Chunks             Chunk Names
+app.js  1.05 KiB       0  [emitted]  main
+Entrypoint main = app.js
+[0] ./src/app.ts 1.02 KiB {0} [built]
+</code></pre><p>You will now have a build folder with all your js scripts.</p>
+
+</article>
+
+
+
+</body>
+
+</html>

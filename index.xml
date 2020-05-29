@@ -12,11 +12,11 @@
     
     
     <item>
-      <title>AWS SAM Serverless Application Model</title>
-      <link>https://tech.sheffner.com/posts/2020-05-28-aws-sam-serverless-application-model/</link>
+      <title>AWS SAM (Serverless Application Model) With Typescript</title>
+      <link>https://tech.sheffner.com/posts/2020-05-28-aws-sam-serverless-application-model-with-typscript/</link>
       <pubDate>Thu, 28 May 2020 15:29:00 -0500</pubDate>
       
-      <guid>https://tech.sheffner.com/posts/2020-05-28-aws-sam-serverless-application-model/</guid>
+      <guid>https://tech.sheffner.com/posts/2020-05-28-aws-sam-serverless-application-model-with-typscript/</guid>
       <description>More information for SAM can be located here.
 Installation for mac and linux:
 sh -c &amp;quot;$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)&amp;quot; add to your .bash_profile
