@@ -19,8 +19,8 @@
       <guid>https://tech.sheffner.com/posts/2020-05-28-aws-sam-serverless-application-model-with-typscript/</guid>
       <description>More information for SAM can be located here.
 Installation for mac and linux:
-sh -c &amp;quot;$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)&amp;quot; add to your .bash_profile
-test -d ~/.linuxbrew &amp;amp;&amp;amp; eval $(~/.linuxbrew/bin/brew shellenv) test -d /home/linuxbrew/.linuxbrew &amp;amp;&amp;amp; eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) test -r ~/.bash_profile &amp;amp;&amp;amp; echo &amp;quot;eval \$($(brew --prefix)/bin/brew shellenv)&amp;quot; &amp;gt;&amp;gt;~/.bash_profile echo &amp;quot;eval \$($(brew --prefix)/bin/brew shellenv)&amp;quot; &amp;gt;&amp;gt;~/.profile now install tools:
+sh -c &amp;#34;$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)&amp;#34; add to your .bash_profile
+test -d ~/.linuxbrew &amp;amp;&amp;amp; eval $(~/.linuxbrew/bin/brew shellenv) test -d /home/linuxbrew/.linuxbrew &amp;amp;&amp;amp; eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) test -r ~/.bash_profile &amp;amp;&amp;amp; echo &amp;#34;eval \$($(brew --prefix)/bin/brew shellenv)&amp;#34; &amp;gt;&amp;gt;~/.bash_profile echo &amp;#34;eval \$($(brew --prefix)/bin/brew shellenv)&amp;#34; &amp;gt;&amp;gt;~/.profile now install tools:
 brew tap aws/tap brew install aws-sam-cli check version:
 sam --version SAM CLI, version 0.52.0 if you need to upgrade package:</description>
     </item>
@@ -38,7 +38,7 @@ brew install hugo at the time of writting this:
 hugo version Hugo Static Site Generator v0.71.1/extended darwin/amd64 BuildDate: unknown start a new site:
 hugo new site blog cd blog add a theme
 git clone https://github.com/niklasbuschmann/contrast-hugo.git themes/contract-hugo add theme to config.yaml
-echo &#39;theme: &amp;quot;contrast-hugo&amp;quot;&#39; &amp;gt;&amp;gt; config.yaml add your first post:
+echo &amp;#39;theme: &amp;#34;contrast-hugo&amp;#34;&amp;#39; &amp;gt;&amp;gt; config.yaml add your first post:
 hugo new posts/2020-05-27-my-first-post.md edit the contents of the post:</description>
     </item>
     
