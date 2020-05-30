@@ -20,7 +20,7 @@
       <description>I came across this tweet that mentioned this git repo.
 I always used godoc on the terminal but then I saw it was capable of color highlighting. :)
 go get -u github.com/inancgumus/godocc This is so nice to have: It isn&amp;rsquo;t perfect for example if you look at the fmt package you will see allot of things that should not be highlighted.
-You can also change the sytling by doing:
+You can also change the styling by doing:
 export GODOCC_STYLE=&amp;#34;dracula&amp;#34; </description>
     </item>
     
