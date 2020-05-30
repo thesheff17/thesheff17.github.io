@@ -6,10 +6,20 @@
     <description>Recent content on Dan Sheffner Tech Info</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 30 May 2020 04:55:03 -0500</lastBuildDate>
+    <lastBuildDate>Sat, 30 May 2020 09:11:42 -0500</lastBuildDate>
     
 	<atom:link href="https://tech.sheffner.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Golang Testing</title>
+      <link>https://tech.sheffner.com/posts/2020-05-30-golang-testing/</link>
+      <pubDate>Sat, 30 May 2020 09:11:42 -0500</pubDate>
+      
+      <guid>https://tech.sheffner.com/posts/2020-05-30-golang-testing/</guid>
+      <description>The more I manage devOps the more I need a way to test entire setups as things progress. Infrastructure testing as code. For example if you run a site at http://example.com/ you want to make sure it returns status 200. Create a new file called example_test.go All golang test files needs to be *_test.go
+package main import ( &amp;#34;net/http&amp;#34; &amp;#34;testing&amp;#34; ) func TestSite(t *testing.T) { resp, err := http.Get(&amp;#34;https://golang.com&amp;#34;) if err !</description>
+    </item>
     
     <item>
       <title>Golang Docs With Colors</title>
