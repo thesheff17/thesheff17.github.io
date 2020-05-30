@@ -6,10 +6,23 @@
     <description>Recent content in Posts on Dan Sheffner Tech Info</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 28 May 2020 15:29:00 -0500</lastBuildDate>
+    <lastBuildDate>Sat, 30 May 2020 04:55:03 -0500</lastBuildDate>
     
 	<atom:link href="https://tech.sheffner.com/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Golang Docs With Colors</title>
+      <link>https://tech.sheffner.com/posts/2020-05-30-golang-docs-with-colors/</link>
+      <pubDate>Sat, 30 May 2020 04:55:03 -0500</pubDate>
+      
+      <guid>https://tech.sheffner.com/posts/2020-05-30-golang-docs-with-colors/</guid>
+      <description>I came across this tweet that mentioned this git repo.
+I always used godoc on the terminal but then I saw it was capable of color highlighting. :)
+go get -u github.com/inancgumus/godocc This is so nice to have: It isn&amp;rsquo;t perfect for example if you look at the fmt package you will see allot of things that should not be highlighted.
+You can also change the sytling by doing:
+export GODOCC_STYLE=&amp;#34;dracula&amp;#34; </description>
+    </item>
     
     <item>
       <title>AWS SAM (Serverless Application Model) With Typescript</title>
