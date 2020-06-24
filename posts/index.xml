@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Dan Sheffner Tech Info</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 30 May 2020 09:11:42 -0500</lastBuildDate>
+    <lastBuildDate>Wed, 24 Jun 2020 09:52:12 -0500</lastBuildDate>
     
 	<atom:link href="https://tech.sheffner.com/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Stitch MP4 files together</title>
+      <link>https://tech.sheffner.com/posts/2020-06-24-stitch-mp4-files/</link>
+      <pubDate>Wed, 24 Jun 2020 09:52:12 -0500</pubDate>
+      
+      <guid>https://tech.sheffner.com/posts/2020-06-24-stitch-mp4-files/</guid>
+      <description>Recenty I bought a go pro hero 8. I have always been somewhat interested in photography and video production. Most of these devices produce seperate files even though its one continuous recording. What is even more frustrating is the time lapse feature is able to shove it all into 1 file. Why can&amp;rsquo;t the video files be 1 file? Go pro is also experiementing with 12GB files instead of 4GB files.</description>
+    </item>
     
     <item>
       <title>Golang Testing</title>

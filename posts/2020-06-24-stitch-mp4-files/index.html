@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>Stitch MP4 files together | Dan Sheffner Tech Info</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.71.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/index.css">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/classes.css">
+<link rel="canonical" href="https://tech.sheffner.com/posts/2020-06-24-stitch-mp4-files/">
+<link rel="alternate" type="application/rss+xml" href="" title="Dan Sheffner Tech Info">
+
+<body>
+
+<header class="icons">
+  
+    <a href="https://tech.sheffner.com/">Dan Sheffner Tech Info</a>
+  
+  
+  
+</header>
+
+<article>
+  <header>
+    <h1>Stitch MP4 files together</h1>
+    <time datetime="2020-06-24T09:52:12-05:00">June 24, 2020</time>
+  </header>
+  <p>Recenty I bought a go pro hero 8.  I have always been somewhat interested in photography and video
+production.  Most of these devices produce seperate files even though its one continuous recording.
+What is even more frustrating is the time lapse feature is able to shove it all into 1 file.  Why can&rsquo;t
+the video files be 1 file?  Go pro is also experiementing with 12GB files instead of 4GB files.  Big
+deal considering file formats for 4K video is just going up and up.</p>
+<p>Here is a quick way to stitch mp4 files off an SD card.  The other thing I bought was a decently fast
+USB read sticks. <code>(400 MB/s)</code>  This way when the stitching is done I can take the USB stick and quickly copy
+to my editing computer.  These are the ones I bought
+<a href="https://www.amazon.com/gp/product/B07RWPF43G/ref=ppx_yo_dt_b_asin_title_o05_s00?ie=UTF8&amp;psc=1">here.</a></p>
+<p>The program I use to do the stitching is <code>ffmpeg</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">brew install ffmpeg
+</code></pre></div><p>Then I wrote this small python script to make <code>output.mp4</code> on the USB stick:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">import</span> glob
+<span style="color:#f92672">import</span> subprocess
+<span style="color:#f92672">from</span> datetime <span style="color:#f92672">import</span> datetime
+startTime <span style="color:#f92672">=</span> datetime<span style="color:#f92672">.</span>now()
+
+dir1 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;/Volumes/msdos/DCIM/100GOPRO/*.MP4&#34;</span>
+dir2 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;/Volumes/ARCANITE/&#34;</span>
+
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#34;./processGoPro.txt&#34;</span>, <span style="color:#e6db74">&#34;w&#34;</span>) <span style="color:#66d9ef">as</span> f:
+    <span style="color:#66d9ef">for</span> each <span style="color:#f92672">in</span> glob<span style="color:#f92672">.</span>glob(dir1):
+    f<span style="color:#f92672">.</span>write(<span style="color:#e6db74">&#34;file &#39;&#34;</span> <span style="color:#f92672">+</span> each <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
+
+command1 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ffmpeg -f concat -safe 0 -i processGoPro.txt -c copy &#34;</span> <span style="color:#f92672">+</span> dir2 <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;output.mp4&#34;</span>
+subprocess<span style="color:#f92672">.</span>call(command1, shell<span style="color:#f92672">=</span>True)
+
+<span style="color:#66d9ef">print</span>(datetime<span style="color:#f92672">.</span>now() <span style="color:#f92672">-</span> startTime)
+<span style="color:#66d9ef">print</span> (<span style="color:#e6db74">&#34;processGoPro.py completed&#34;</span>)
+</code></pre></div><p>You can change <code>dir1</code> and <code>dir2</code> if you have different paths.  This will grab ALL MP4 files in the
+directory. You can adjust the glob mask if you want to change which files you pull.</p>
+
+</article>
+
+
+
+</body>
+
+</html>
