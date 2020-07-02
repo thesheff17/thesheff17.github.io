@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>Why you should always use docker | Dan Sheffner Tech Info</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.71.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/index.css">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/classes.css">
+<link rel="canonical" href="https://tech.sheffner.com/posts/2020-06-31-docker/">
+<link rel="alternate" type="application/rss+xml" href="" title="Dan Sheffner Tech Info">
+
+<body>
+
+<header class="icons">
+  
+    <a href="https://tech.sheffner.com/">Dan Sheffner Tech Info</a>
+  
+  
+  
+</header>
+
+<article>
+  <header>
+    <h1>Why you should always use docker</h1>
+    <time datetime="2020-06-30T02:09:22-05:00">June 30, 2020</time>
+  </header>
+  <h2 id="docker">Docker</h2>
+<h3 id="advantages">Advantages</h3>
+<p>You should try to use docker regardless of the platform you are using.  Docker provides a number of
+advantages over using a tradition system. You can be on mac, linux, or windows and always produce
+an immutable image.  If you have ever heard &ldquo;it works on my machine&rdquo; problem this is one of the
+problems it solves.</p>
+<p>If you have ever dealt with a build system you know these times sometimes can get very long.  Docker
+has a layer system that will check the hash before it builds that layer.  If the hash matches it can
+skip that entire command.  This includes time consuming tasks such as apt-get.</p>
+<p>Docker provides <code>docker pull</code> where you can pull images.  This way you can build images on super
+fast expensive hardware to do long running tasks and then pull down these images on any number of
+other machines.  This provides a huge advantage especially for testers and QA that might not
+understand the services provides by the containers.</p>
+<p>Docker provides a single enpoint for the <code>docker pull</code> library and these can be located in AWS or in
+any other cloud provider.  This way you are pulling down images instanlty over super fast fiber
+connectection to these EC2 instances.  Even docker containers in the 2GB range takes seconds to get.</p>
+<p>Docker provides a super simple way to stand up services that will speed up docker builds to
+extreamly fast speeds.  Anyone that has complained about docker build times have not really dealt
+with docker.  See below to speed up container builds even more.</p>
+<p>Docker supports a multi build &ldquo;stage&rdquo; setup.  This way 1 container can do the heavy lifting and then
+you can simple copy the built resources into another container.  This is a called a multi build stage
+docker container.  Most people don&rsquo;t understand how these work so they do not use it.  If you are
+building production docker containers you should use this to reduce image size and pull time as
+well.</p>
+<p>Docker has lead to the technology called <a href="https://kubernetes.io/">kerbernetes (k8s)</a> for short.  k8s
+is a way to take a fleet of docker containers and provide an abstraction layer to manging
+services.  This is great regardless of what setup you are running.  k8s can run on a single node on
+a laptop all the way to thousands of nodes in a cloud service. All cloud providers are providing
+k8s services already.</p>
+<p>Docker has lead to a number of proprietary AWS services.  For example: <a href="https://aws.amazon.com/elasticbeanstalk/">elastic beanstalk
+(EB)</a>,
+<a href="https://aws.amazon.com/ecs/">elastic container service (ECS)</a>, and
+<a href="https://aws.amazon.com/fargate/">fargate.</a>  I have used EB for years to mange scaling from 1 server
+to hundreds.  It has worked so well that even transitioning to k8s was not needed.  ECS and
+fargate are also great auto scaling services.  Fargate provides completely managed services and you
+don&rsquo;t even need to worry about EC2 instances. You can take this even one step further and use
+<a href="https://aws.amazon.com/secrets-manager/">AWS secrets manager.</a> If you want managed AWS k8s check out
+<a href="https://aws.amazon.com/kubernetes/">here.</a></p>
+<p>When your cloud provider launches the next shiny and cheaper instance type you should be able to
+switch to with no issues. I was able to leverage AWS new ARM based EC2 instances very easily with
+docker.  This is another huge advantage.  Sometimes I see software completely tied to some EC2
+server size/setup. This should be abstracted out as much as possible.  Docker provides that layer so
+you should be able to move around conatiners regardless of EC2 instance type you are using.</p>
+<h3 id="disadvantages">Disadvantages</h3>
+<p>Allot of people might say they don&rsquo;t like docker because they don&rsquo;t fully understand the technology.
+Lots of times these are older system admins that do no want to automate things.  Many times they
+thought they could get away with not knowing how to read and write programming lanauages. I would
+say its even more critical that a DevOps person know how to read and write software.</p>
+<p>The one disadvantage I do see is there is a second netowrking layer for all docker containers.  This
+might throw some off troubleshooting some things.  Once you know this though it makes it pretty easy
+to understand what is going.  Use <code>docker inspect &lt;containerId&gt;</code> to see all the info about the
+containers.</p>
+<p>There is some more overhead to manage this.  You should have dedicated DevOps people to help define
+how docker/k8s will be used in an organization.  You should try not to just assume developers know
+how to manage this stuff.  This is complex tech that will help any org but has to be managed
+correctly.</p>
+<h3 id="what-conatiners-do-i-start-with">What conatiners do I start with?</h3>
+<p>The first containers I build are an apt-get cache service.
+<a href="https://raw.githubusercontent.com/thesheff17/docker/master/apt-cacher-ng/Dockerfile">https://raw.githubusercontent.com/thesheff17/docker/master/apt-cacher-ng/Dockerfile</a></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://raw.githubusercontent.com/thesheff17/docker/master/apt-cacher-ng/Dockerfile
+docker build . -t thesheff17/apt-cacher-ng
+mkdir /tmp/cache
+docker run -d -p 3142:3142 -v /tmp/cache:/var/cache/apt-cacher-ng thesheff17/apt-cacher-ng
+</code></pre></div><p>Now point your client at it in your Dockerfile:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">RUN  echo <span style="color:#e6db74">&#39;Acquire::http { Proxy &#34;http://172.17.0.2:3142&#34;; };&#39;</span> &gt;&gt; /etc/apt/apt.conf.d/01proxy
+</code></pre></div><p>You can remove the proxy at the end:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rm /etc/apt/apt.conf.d/01proxy
+</code></pre></div><p>Now I need a script that cleans up everything in docker except ubuntu, thesheff17/apt-cacher-ng
+image and my running apt-cacher-ng container.  This way I can quickly test the speed of how well the
+proxy is doing.  This is extreamly nice when you have allot of apt-get packages to do.  I started
+building out an ansible container to use to control all my other nodes in another blog post. I try
+to use apt-get as much a possible since these will be cached in the proxy. You can also easily copy
+around the proxy cache which is located at <code>/tmp/cache</code> on your machine.  This is really useful if
+you have slow internet at certain locations.  You can easily bring in all the packages tar.gz and
+dump them in the cache directory. Then even the slowest internet connection is still fast sinces the
+packages will be in the cache. I have very fast internet 350Mps+ and I still get a 18 second speed
+up.  This will be extreamly noticiable on slower connections, bigger apt-get package builds, and
+especially parallel apt-get installations across X nodes.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">real    1m45.514s with apt-cacher-ng
+real    2m3.008s  without apt-cacher-ng
+</code></pre></div><p>Script to cleanup everything except the apt-cacher-ng running container, image and base image.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/bin/bash
+</span><span style="color:#75715e"></span>echo <span style="color:#e6db74">&#34;cleanDockerSome.sh started...&#34;</span>
+
+output1<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>docker ps | grep <span style="color:#e6db74">&#34;apt-cacher-ng&#34;</span> | awk <span style="color:#e6db74">&#39;{ print $1 }&#39;</span><span style="color:#66d9ef">)</span>
+output2<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>docker images | grep <span style="color:#e6db74">&#34;apt-cacher-ng&#34;</span> | awk <span style="color:#e6db74">&#39;{ print $3 }&#39;</span><span style="color:#66d9ef">)</span>
+output3<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>docker images | grep <span style="color:#e6db74">&#34;ubuntu                       20.04&#34;</span> | awk <span style="color:#e6db74">&#39;{ print $3 }&#39;</span><span style="color:#66d9ef">)</span>
+
+docker stop <span style="color:#66d9ef">$(</span>docker ps -aq | grep -v $output1<span style="color:#66d9ef">)</span>
+docker rm <span style="color:#66d9ef">$(</span>docker ps -aq | grep -v $output1<span style="color:#66d9ef">)</span>
+docker rmi <span style="color:#66d9ef">$(</span>docker images -q | grep -v $output2 | grep -v $output3<span style="color:#66d9ef">)</span>
+
+echo <span style="color:#e6db74">&#34;cleanDockerSome.sh completed.&#34;</span>
+</code></pre></div><h1 id="where-do-i-go-from-here">Where do I go from here?</h1>
+<p>I recommend using a DevOps automation tool like ansible to control and describe your
+infrastructure. There should be a blog post on ansible soon.</p>
+
+</article>
+
+
+
+</body>
+
+</html>

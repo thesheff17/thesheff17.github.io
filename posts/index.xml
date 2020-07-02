@@ -6,10 +6,41 @@
     <description>Recent content in Posts on Dan Sheffner Tech Info</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 24 Jun 2020 09:52:12 -0500</lastBuildDate>
+    <lastBuildDate>Thu, 02 Jul 2020 00:12:03 -0500</lastBuildDate>
     
 	<atom:link href="https://tech.sheffner.com/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Vim Shortcuts</title>
+      <link>https://tech.sheffner.com/posts/2020-07-02-vim-shortcuts/</link>
+      <pubDate>Thu, 02 Jul 2020 00:12:03 -0500</pubDate>
+      
+      <guid>https://tech.sheffner.com/posts/2020-07-02-vim-shortcuts/</guid>
+      <description>Vim Shortcuts So many times I keep learning vim over time. Slowly I will be somewhat good at it right :)
+format text in a block select the text with v
+then do gq
+you can learn more with :h gq</description>
+    </item>
+    
+    <item>
+      <title>Ansible Tutorial</title>
+      <link>https://tech.sheffner.com/posts/2020-07-01-ansible/</link>
+      <pubDate>Wed, 01 Jul 2020 02:09:22 -0500</pubDate>
+      
+      <guid>https://tech.sheffner.com/posts/2020-07-01-ansible/</guid>
+      <description>This will try to walk you through the setup and using ansible. Brief Overview I consider ansible just another python tool that is trying to solve configuration management of servers and services. While it is not perfect it does provide a pretty good level of abstraction for managing DevOps. These tools will always continue to involve and who knows what I will be using tomorrow but the concepts usually stay the same:</description>
+    </item>
+    
+    <item>
+      <title>Why you should always use docker</title>
+      <link>https://tech.sheffner.com/posts/2020-06-31-docker/</link>
+      <pubDate>Tue, 30 Jun 2020 02:09:22 -0500</pubDate>
+      
+      <guid>https://tech.sheffner.com/posts/2020-06-31-docker/</guid>
+      <description>Docker Advantages You should try to use docker regardless of the platform you are using. Docker provides a number of advantages over using a tradition system. You can be on mac, linux, or windows and always produce an immutable image. If you have ever heard &amp;ldquo;it works on my machine&amp;rdquo; problem this is one of the problems it solves.
+If you have ever dealt with a build system you know these times sometimes can get very long.</description>
+    </item>
     
     <item>
       <title>Stitch MP4 files together</title>

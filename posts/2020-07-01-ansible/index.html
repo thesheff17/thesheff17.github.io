@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>Ansible Tutorial | Dan Sheffner Tech Info</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.71.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/index.css">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/classes.css">
+<link rel="canonical" href="https://tech.sheffner.com/posts/2020-07-01-ansible/">
+<link rel="alternate" type="application/rss+xml" href="" title="Dan Sheffner Tech Info">
+
+<body>
+
+<header class="icons">
+  
+    <a href="https://tech.sheffner.com/">Dan Sheffner Tech Info</a>
+  
+  
+  
+</header>
+
+<article>
+  <header>
+    <h1>Ansible Tutorial</h1>
+    <time datetime="2020-07-01T02:09:22-05:00">July 01, 2020</time>
+  </header>
+  <h2 id="this-will-try-to-walk-you-through-the-setup-and-using-ansible">This will try to walk you through the setup and using ansible.</h2>
+<h3 id="brief-overview">Brief Overview</h3>
+<p>I consider ansible just another python tool that is trying to solve configuration management of
+servers and services.  While it is not perfect it does provide a pretty good level of abstraction
+for managing DevOps.  These tools will always continue to involve and who knows what I will be using
+tomorrow but the concepts usually stay the same:</p>
+<ul>
+<li>provide an immutable state to describe infrastructure and software</li>
+<li>be able to managing with git</li>
+<li>reproducibility</li>
+<li>scalability</li>
+</ul>
+<h3 id="where-do-these-tools-fall-short">Where do these tools fall short</h3>
+<p>I would say there is a pretty big learning curve regardless of the tools you are using.  Most DevOps
+people know docker but most developers do not.  To take it one step further DevOps is usually
+manging resource allocation either in the cloud or in a data center.  Ansible while provides a
+layer on top of these the complexity can soon consume 100% of the time trying to &ldquo;get it to work&rdquo; as
+I call it. I have written many tools like ansible using <a href="http://www.fabfile.org/">fabric</a> python
+library. That said I do understand the need for tools like ansible where we have a common language
+(yml) to describe our steup. Infrastructure as code.</p>
+<h3 id="some-advangages-i-see-with-ansible">Some Advangages I see with Ansible</h3>
+<p>Ansible has no client so this is always a push based system.  Everything is driven through SSH
+access as it should be.  I prefer to even take it one step further and always use private/public
+keys.  Many companies though are running active directory services to provide access to these
+servers.  We will see later on how to manage either setup.</p>
+<h3 id="2-types-of-servers">2 types of servers</h3>
+<p>Control machine is a machine with the ansible software configured in order to manage nodes.  Nodes
+are machines controled by the control machine.  The control machine can simple be a laptop or a
+jenkins server in the clould. Lets create a docker file for this so we can easily have these tools
+ran anywhere that supports docker.</p>
+<p>Copy a new private/public key pair into place as <code>id_rsa  id_rsa.pub</code>  I won&rsquo;t include these in the
+tutorial.</p>
+<p>Dockerfile-control</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">FROM ubuntu:20.04
+
+<span style="color:#75715e"># time docker build . -t thesheff17/ansible-control -f Dockerfile-control</span>
+RUN  echo <span style="color:#e6db74">&#39;Acquire::http { Proxy &#34;http://172.17.0.2:3142&#34;; };&#39;</span> &gt;&gt; /etc/apt/apt.conf.d/01proxy
+
+RUN <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get update <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get upgrade -y <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    export DEBIAN_FRONTEND<span style="color:#f92672">=</span>noninteractive <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get install -y python3 python3-pip python3-dev tmux vim build-essential git wget ssh <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    iputils-ping net-tools <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get autoremove <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get clean <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY id_rsa /root/.ssh/
+COPY id_rsa.pub /root/.ssh/
+
+RUN <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    pip3 install ansible bpython awscli <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    cd /root/ <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    wget https://raw.githubusercontent.com/thesheff17/dotfiles/master/.tmux.conf <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    wget https://raw.githubusercontent.com/thesheff17/vim/master/vimrc <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    mv vimrc .vimrc <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    mkdir /var/run/sshd <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    mkdir /etc/ansible <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    yes | unminimize
+
+COPY hosts /etc/ansible/
+COPY ansible.cfg /etc/ansible/
+COPY pingAll.sh /root/
+COPY apache2.yml /root/
+
+<span style="color:#75715e"># if you need to generate another key</span>
+<span style="color:#75715e"># ssh-keygen -t rsa -b 4096 -N &#34;&#34; -f ~/.ssh/id_rsa &amp;&amp; \</span>
+<span style="color:#75715e"># cat /root/.ssh/id_rsa.pub</span>
+EXPOSE <span style="color:#ae81ff">22</span>
+CMD <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;/bin/bash&#34;</span><span style="color:#f92672">]</span>
+</code></pre></div><p>hosts</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">[webserver]
+<span style="color:#ae81ff">172.17.0.3</span>
+<span style="color:#ae81ff">172.17.0.4</span>
+<span style="color:#ae81ff">172.17.0.5</span>
+<span style="color:#ae81ff">172.17.0.6</span>
+</code></pre></div><p>ansible.cfg</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>defaults<span style="color:#f92672">]</span>
+host_key_checking <span style="color:#f92672">=</span> False
+</code></pre></div><p>pingAll.sh</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/bin/bash
+</span><span style="color:#75715e"></span>
+ansible all -m ping
+</code></pre></div><p>apache2.yml</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">---
+- <span style="color:#66d9ef">hosts</span>: webserver
+  <span style="color:#66d9ef">tasks</span>:
+    - <span style="color:#66d9ef">name</span>: install apache2
+      <span style="color:#66d9ef">apt</span>: name=apache2 update_cache=yes state=latest
+
+    - <span style="color:#66d9ef">name</span>: enabled mod_rewrite
+      <span style="color:#66d9ef">apache2_module</span>: name=rewrite state=present
+      <span style="color:#66d9ef">notify</span>:
+        - restart apache2
+
+  <span style="color:#66d9ef">handlers</span>:
+    - <span style="color:#66d9ef">name</span>: restart apache2
+      <span style="color:#66d9ef">service</span>: name=apache2 state=restarted
+...
+</code></pre></div><p>Dockerfile-node</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">FROM ubuntu:20.04
+
+<span style="color:#75715e"># time docker build . -t thesheff17/ansible-node -f Dockerfile-node</span>
+<span style="color:#75715e"># docker run -d -P --name server1 thesheff17/ansible-node:latest</span>
+<span style="color:#75715e"># docker run -d -P --name server2 thesheff17/ansible-node:latest</span>
+#
+RUN  echo <span style="color:#e6db74">&#39;Acquire::http { Proxy &#34;http://172.17.0.2:3142&#34;; };&#39;</span> &gt;&gt; /etc/apt/apt.conf.d/01proxy
+
+RUN <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get update <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get upgrade -y <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    export DEBIAN_FRONTEND<span style="color:#f92672">=</span>noninteractive <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get install -y tmux vim ssh <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get autoremove <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    apt-get clean <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    cd /root/ <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    wget https://raw.githubusercontent.com/thesheff17/dotfiles/master/.tmux.conf <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    wget https://raw.githubusercontent.com/thesheff17/vim/master/vimrc <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    mv vimrc .vimrc <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    mkdir /var/run/sshd
+
+COPY id_rsa.pub /root/.ssh/authorized_keys
+
+EXPOSE <span style="color:#ae81ff">22</span>
+CMD <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;/usr/sbin/sshd&#34;</span>, <span style="color:#e6db74">&#34;-D&#34;</span><span style="color:#f92672">]</span>
+</code></pre></div><p>build.sh - helper script to build images:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/bin/bash
+</span><span style="color:#75715e"></span>echo <span style="color:#e6db74">&#34;build.sh started...&#34;</span>
+
+time docker build . -t thesheff17/ansible-control -f Dockerfile-control
+time docker build . -t thesheff17/ansible-node -f Dockerfile-node
+docker run -d -P --name server1 thesheff17/ansible-node:latest
+docker run -d -P --name server2 thesheff17/ansible-node:latest
+docker run -d -P --name server3 thesheff17/ansible-node:latest
+docker run -d -P --name server4 thesheff17/ansible-node:latest
+
+echo <span style="color:#e6db74">&#34;build.sh completed.&#34;</span>
+</code></pre></div><p>You can call <code>build.sh</code> and it will stand up 4 the nodes.  You can then connect to the control
+ansible container and run <code>pingAll.sh</code> and this should ping every host.  Lets also get the uptime
+for every node in the webservers header: <code>ansible webservers -m command -a &quot;uptime&quot;</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible webserver -m command -a <span style="color:#e6db74">&#34;uptime&#34;</span>
+172.17.0.3 | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+12:00:49 up  9:10,  <span style="color:#ae81ff">1</span> user,  load average: 0.00, 0.01, 0.06
+172.17.0.5 | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+12:00:49 up  9:10,  <span style="color:#ae81ff">1</span> user,  load average: 0.00, 0.01, 0.06
+172.17.0.4 | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+12:00:49 up  9:10,  <span style="color:#ae81ff">1</span> user,  load average: 0.00, 0.01, 0.06
+172.17.0.6 | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+12:00:49 up  9:10,  <span style="color:#ae81ff">1</span> user,  load average: 0.00, 0.01, 0.06
+</code></pre></div><p>Now that we have ansible controlling our webservers lets install apache2.  Add this to <code>apache2.yml</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">---
+- <span style="color:#66d9ef">hosts</span>: webserver
+  <span style="color:#66d9ef">tasks</span>:
+    - <span style="color:#66d9ef">name</span>: install apache2
+      <span style="color:#66d9ef">apt</span>: name=apache2 update_cache=yes state=latest
+
+    - <span style="color:#66d9ef">name</span>: enabled mod_rewrite
+      <span style="color:#66d9ef">apache2_module</span>: name=rewrite state=present
+      <span style="color:#66d9ef">notify</span>:
+        - restart apache2
+
+  <span style="color:#66d9ef">handlers</span>:
+    - <span style="color:#66d9ef">name</span>: restart apache2
+      <span style="color:#66d9ef">service</span>: name=apache2 state=restarted
+...
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible-playbook apache2.yml
+</code></pre></div><p>output:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible-playbook apache2.yml
+
+PLAY <span style="color:#f92672">[</span>webserver<span style="color:#f92672">]</span> ************************************************************************************************************
+
+TASK <span style="color:#f92672">[</span>Gathering Facts<span style="color:#f92672">]</span> ******************************************************************************************************
+ok: <span style="color:#f92672">[</span>172.17.0.5<span style="color:#f92672">]</span>
+ok: <span style="color:#f92672">[</span>172.17.0.3<span style="color:#f92672">]</span>
+ok: <span style="color:#f92672">[</span>172.17.0.6<span style="color:#f92672">]</span>
+ok: <span style="color:#f92672">[</span>172.17.0.4<span style="color:#f92672">]</span>
+
+TASK <span style="color:#f92672">[</span>install apache2<span style="color:#f92672">]</span> ******************************************************************************************************
+<span style="color:#f92672">[</span>WARNING<span style="color:#f92672">]</span>: Updating cache and auto-installing missing dependency: python3-apt
+changed: <span style="color:#f92672">[</span>172.17.0.3<span style="color:#f92672">]</span>
+changed: <span style="color:#f92672">[</span>172.17.0.5<span style="color:#f92672">]</span>
+changed: <span style="color:#f92672">[</span>172.17.0.4<span style="color:#f92672">]</span>
+changed: <span style="color:#f92672">[</span>172.17.0.6<span style="color:#f92672">]</span>
+
+TASK <span style="color:#f92672">[</span>enabled mod_rewrite<span style="color:#f92672">]</span> **************************************************************************************************
+changed: <span style="color:#f92672">[</span>172.17.0.5<span style="color:#f92672">]</span>
+changed: <span style="color:#f92672">[</span>172.17.0.6<span style="color:#f92672">]</span>
+changed: <span style="color:#f92672">[</span>172.17.0.3<span style="color:#f92672">]</span>
+changed: <span style="color:#f92672">[</span>172.17.0.4<span style="color:#f92672">]</span>
+
+RUNNING HANDLER <span style="color:#f92672">[</span>restart apache2<span style="color:#f92672">]</span> *******************************************************************************************
+changed: <span style="color:#f92672">[</span>172.17.0.3<span style="color:#f92672">]</span>
+changed: <span style="color:#f92672">[</span>172.17.0.4<span style="color:#f92672">]</span>
+changed: <span style="color:#f92672">[</span>172.17.0.6<span style="color:#f92672">]</span>
+changed: <span style="color:#f92672">[</span>172.17.0.5<span style="color:#f92672">]</span>
+
+PLAY RECAP ******************************************************************************************************************
+172.17.0.3                 : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+172.17.0.4                 : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+172.17.0.5                 : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+172.17.0.6                 : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</code></pre></div><p>Now you have a cluster of apache2 server running.  You can now start working on any other services
+you need to define in ansible. Where do you go from here? Well I recommend starting with the
+<a href="https://docs.ansible.com/">documenation</a> on parts you are unfamiliar with.  Learn about vaults modules to start with.
+Youtube/Google are also great resources for finding good free ansible examples.  There are certainly
+allot better examples out there of install and configurating apache2, nginx, and so on.  I show just
+enough to understand what ansible + ssh can do.  If you need a boost in speed as playbooks get
+longer check out <a href="https://mitogen.networkgenomics.com/ansible_detailed.html">mitogen.</a></p>
+
+</article>
+
+
+
+</body>
+
+</html>
