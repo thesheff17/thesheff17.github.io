@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>Ansible Kubernetes basics (WIP) | Dan Sheffner Tech Info</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.71.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/index.css">
+<link rel="stylesheet" href="https://tech.sheffner.com/css/classes.css">
+<link rel="canonical" href="https://tech.sheffner.com/posts/2020-07-12-ansible-kubernetes/">
+<link rel="alternate" type="application/rss+xml" href="" title="Dan Sheffner Tech Info">
+
+<body>
+
+<header class="icons">
+  
+    <a href="https://tech.sheffner.com/">Dan Sheffner Tech Info</a>
+  
+  
+  
+</header>
+
+<article>
+  <header>
+    <h1>Ansible Kubernetes basics (WIP)</h1>
+    <time datetime="2020-07-12T16:48:17-05:00">July 12, 2020</time>
+  </header>
+  <h1 id="this-will-start-to-show-you-how-to-use-ansible-and-kubernetes-clusters-together">This will start to show you how to use ansible and kubernetes clusters together</h1>
+<h2 id="prior-setup">prior setup</h2>
+<p>You will need to get kubernetes installed correctly on your a machine.  This is fairly easy to do on
+each system but it is depending on your operating systems. You can find more info about install
+kubernetes <a href="https://kubernetes.io/">here.</a> You should be able to run this and get the versions:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl version
+Client Version: version.Info<span style="color:#f92672">{</span>Major:<span style="color:#e6db74">&#34;1&#34;</span>, Minor:<span style="color:#e6db74">&#34;15&#34;</span>, GitVersion:<span style="color:#e6db74">&#34;v1.15.2&#34;</span>, GitCommit:<span style="color:#e6db74">&#34;f6278300bebbb750328ac16ee6dd3aa7d3549568&#34;</span>, GitTreeState:<span style="color:#e6db74">&#34;clean&#34;</span>, BuildDate:<span style="color:#e6db74">&#34;2019-08-05T09:23:26Z&#34;</span>, GoVersion:<span style="color:#e6db74">&#34;go1.12.5&#34;</span>, Compiler:<span style="color:#e6db74">&#34;gc&#34;</span>, Platform:<span style="color:#e6db74">&#34;darwin/amd64&#34;</span><span style="color:#f92672">}</span>
+Server Version: version.Info<span style="color:#f92672">{</span>Major:<span style="color:#e6db74">&#34;1&#34;</span>, Minor:<span style="color:#e6db74">&#34;16+&#34;</span>, GitVersion:<span style="color:#e6db74">&#34;v1.16.6-beta.0&#34;</span>, GitCommit:<span style="color:#e6db74">&#34;e7f962ba86f4ce7033828210ca3556393c377bcc&#34;</span>, GitTreeState:<span style="color:#e6db74">&#34;clean&#34;</span>, BuildDate:<span style="color:#e6db74">&#34;2020-01-15T08:18:29Z&#34;</span>, GoVersion:<span style="color:#e6db74">&#34;go1.13.5&#34;</span>, Compiler:<span style="color:#e6db74">&#34;gc&#34;</span>, Platform:<span style="color:#e6db74">&#34;linux/amd64&#34;</span><span style="color:#f92672">}</span>
+</code></pre></div><p>The next thing you will need is a version of <a href="https://golang.org/">golang</a> installed. At the time of
+writing this here is my version:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">go version
+go version go1.14.1 darwin/amd64
+</code></pre></div><p>The next thing is you need ansible installed:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible --version
+ansible 2.9.10
+</code></pre></div><p>The last package we will use is the openshift module which has kubernetes support:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pip install openshift
+openshift<span style="color:#f92672">==</span>0.11.2
+</code></pre></div><h2 id="configuring-our-first-test-service-in-kubernetes">configuring our first test service in kubernetes</h2>
+<p>Now lets write a simple web server in golang so we can use it for our example and name it <code>hello.go</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-golang" data-lang="golang"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+        <span style="color:#e6db74">&#34;fmt&#34;</span>
+        <span style="color:#e6db74">&#34;log&#34;</span>
+        <span style="color:#e6db74">&#34;net/http&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">helloServer</span>(<span style="color:#a6e22e">w</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ResponseWriter</span>, <span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
+        <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Fprintf</span>(<span style="color:#a6e22e">w</span>, <span style="color:#e6db74">&#34;Hello your request is %s&#34;</span>, <span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">URL</span>.<span style="color:#a6e22e">Path</span>)
+        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;recieved request for path: %s&#34;</span>, <span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">URL</span>.<span style="color:#a6e22e">Path</span>)
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">addr</span> <span style="color:#66d9ef">string</span> = <span style="color:#e6db74">&#34;:8180&#34;</span>
+        <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">HandleFunc</span>(<span style="color:#e6db74">&#34;/&#34;</span>, <span style="color:#a6e22e">helloServer</span>)
+        <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#a6e22e">addr</span>, <span style="color:#66d9ef">nil</span>)
+
+}
+</code></pre></div><p>Now compile your new web server:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">go build hello.go
+</code></pre></div><p>Now start your web server: <code>./hello</code></p>
+<p>Now you should be able to curl your server:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl localhost:8180
+2020/07/12 19:40:54 recieved request <span style="color:#66d9ef">for</span> path: /
+curl localhost:8180/hello
+2020/07/12 19:41:18 recieved request <span style="color:#66d9ef">for</span> path: /hello
+</code></pre></div><p>Now we are going to build a multi stage docker container.  The advantages to this is that you have 1
+container do the building and then you can copy the binary into the next container.  This really
+reduces the size of your docker containers.  Docker containers should try to be as small as possible
+in ordre to pull down faster on the kubernetes cluster.  I still see docker containers that are very
+big.  This multi stage setup can significantly reduce container size.  More information can be found
+<a href="https://docs.docker.com/develop/develop-images/multistage-build/">here.</a></p>
+<p>Dockerfile:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># first stage</span>
+FROM golang:1-alpine as build
+COPY hello.go hello.go
+RUN go build hello.go
+
+<span style="color:#75715e"># second stage</span>
+FROM alpine:latest
+COPY --from<span style="color:#f92672">=</span>build go/hello hello
+EXPOSE <span style="color:#ae81ff">8180</span>
+ENTRYPOINT <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;./hello&#34;</span><span style="color:#f92672">]</span>
+</code></pre></div><p>Now lets build the container:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker build -t hello-go .
+Sending build context to Docker daemon  7.364MB
+Step 1/7 : FROM golang:1-alpine as build
+ ---&gt; 3289bf11c284
+Step 2/7 : COPY hello.go hello.go
+ ---&gt; Using cache
+ ---&gt; af8ba0b2e7c3
+Step 3/7 : RUN go build hello.go
+ ---&gt; Using cache
+ ---&gt; abf9fcf6a5d8
+Step 4/7 : FROM alpine:latest
+ ---&gt; a24bb4013296
+Step 5/7 : COPY --from<span style="color:#f92672">=</span>build go/hello hello
+ ---&gt; e7490e0492db
+Step 6/7 : EXPOSE <span style="color:#ae81ff">8180</span>
+ ---&gt; Running in 31bd5ffc69f4
+Removing intermediate container 31bd5ffc69f4
+ ---&gt; 4212a43d83ec
+Step 7/7 : ENTRYPOINT <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;./hello&#34;</span><span style="color:#f92672">]</span>
+ ---&gt; Running in cc3395b5efba
+Removing intermediate container cc3395b5efba
+ ---&gt; 91531928fd1b
+Successfully built 91531928fd1b
+Successfully tagged hello-go:latest
+</code></pre></div><p>Now when you do <code>docker images</code> you will see your 2 containers and the primary one is significantly
+smaller.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">hello-go latest 91531928fd1b <span style="color:#ae81ff">7</span> seconds ago 13.1MB
+&lt;none&gt; &lt;none&gt; abf9fcf6a5d8   <span style="color:#ae81ff">2</span> minutes ago 377MB
+</code></pre></div><p>The 2nd container that has <code>&lt;none&gt;</code> is the container that did the actual build. If you know you are
+ready to deploy your container and want to reclaim this pace you can do:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">docker image prune
+WARNING! This will remove all dangling images.
+Are you sure you want to continue? [y/N] y
+Deleted Images:
+deleted: sha256:8d8bcc897b3423b1f0c7086b9056d45765616597b82bf7c3623bc3491d90fa57
+deleted: sha256:7dbe8d79e9cda7c6c2363fafe6dc4dfbadb5f72802d7976a3ac6caab3e384ffb
+deleted: sha256:81b03786ab969976848164135f91d1bfbe0802dee73cbbd6dae7dd1a70a896fb
+deleted: sha256:f052a3a75925dc96aefd98cce1c38c431082d305674a961794754f09845c28dc
+deleted: sha256:6182c01452845182816a67900c71de08135147b923dc4b4b207c2e07242c3ec5
+deleted: sha256:f6f8ef4dd231a206b128c0c2b50b465eb89c0241d62f19b80068ae0c2dfe8a58
+deleted: sha256:48168e2ac4b1a3d1f5393ea1b09f7d438e0222793ccd07cbe02240a2973ce8ff
+deleted: sha256:d6f81a4eba0af3b6e4ab4a205c9cebfe1a9109a0490f0484e735243cf53da4fd
+
+Total reclaimed space: 363.9MB
+</code></pre></div><p>Now lets temporary start our docker container and make sure our curl commands still work:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name hello-go --rm -p 8180:8180 hello-go
+curl localhost:8180
+curl localhost:8180/hello
+</code></pre></div><p>You can get out of the running container using <code>ctrl-c</code></p>
+<p>Now lets create a deployment for our new container:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl create deployment hello-go --image<span style="color:#f92672">=</span>hello-go
+</code></pre></div><p>You can get the status of the conatiner by doing:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get pods
+NAME                        READY   STATUS             RESTARTS   AGE
+hello-go-6dfc8bbd74-sz7pr   0/1     ImagePullBackOff   <span style="color:#ae81ff">0</span>          2m34s
+</code></pre></div><p>You can get even more info about the pod running this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl describe pod
+
+You can see it is having problems pullin the image by the READY and STATUS columns.  The reason <span style="color:#66d9ef">for</span>
+this is because it is trying to pull the image off a different docker registery.  Lets fix that so
+it can pull from the local machine:
+<span style="color:#e6db74">```</span>bash
+kubectl describe pod hello-go-6dfc8bbd74-sz7pr
+Name:           hello-go-6dfc8bbd74-sz7pr
+Namespace:      default
+Priority:       <span style="color:#ae81ff">0</span>
+Node:           docker-desktop/192.168.65.3
+Start Time:     Wed, <span style="color:#ae81ff">15</span> Jul <span style="color:#ae81ff">2020</span> 08:23:25 -0500
+Labels:         app<span style="color:#f92672">=</span>hello-go
+                pod-template-hash<span style="color:#f92672">=</span>6dfc8bbd74
+Annotations:    &lt;none&gt;
+Status:         Pending
+IP:             10.1.0.19
+Controlled By:  ReplicaSet/hello-go-6dfc8bbd74
+Containers:
+  hello-go:
+    Container ID:
+    Image:          hello-go
+    Image ID:
+    Port:           &lt;none&gt;
+    Host Port:      &lt;none&gt;
+    State:          Waiting
+      Reason:       ImagePullBackOff
+    Ready:          False
+    Restart Count:  <span style="color:#ae81ff">0</span>
+    Environment:    &lt;none&gt;
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-z6pkr <span style="color:#f92672">(</span>ro<span style="color:#f92672">)</span>
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             False
+  ContainersReady   False
+  PodScheduled      True
+Volumes:
+  default-token-z6pkr:
+    Type:        Secret <span style="color:#f92672">(</span>a volume populated by a Secret<span style="color:#f92672">)</span>
+    SecretName:  default-token-z6pkr
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  &lt;none&gt;
+Tolerations:     node.kubernetes.io/not-ready:NoExecute <span style="color:#66d9ef">for</span> 300s
+                 node.kubernetes.io/unreachable:NoExecute <span style="color:#66d9ef">for</span> 300s
+Events:
+  Type     Reason     Age                    From                     Message
+  ----     ------     ----                   ----                     -------
+  Normal   Scheduled  &lt;unknown&gt;              default-scheduler        Successfully assigned default/hello-go-6dfc8bbd74-sz7pr to docker-desktop
+  Normal   Pulling    3m3s <span style="color:#f92672">(</span>x4 over 4m32s<span style="color:#f92672">)</span>   kubelet, docker-desktop  Pulling image <span style="color:#e6db74">&#34;hello-go&#34;</span>
+  Warning  Failed     3m2s <span style="color:#f92672">(</span>x4 over 4m31s<span style="color:#f92672">)</span>   kubelet, docker-desktop  Failed to pull image <span style="color:#e6db74">&#34;hello-go&#34;</span>: rpc error: code <span style="color:#f92672">=</span> Unknown desc <span style="color:#f92672">=</span> Error response from daemon: pull access denied <span style="color:#66d9ef">for</span> hello-go, repository does not exist or may require <span style="color:#e6db74">&#39;docker login&#39;</span>: denied: requested access to the resource is denied
+  Warning  Failed     3m2s <span style="color:#f92672">(</span>x4 over 4m31s<span style="color:#f92672">)</span>   kubelet, docker-desktop  Error: ErrImagePull
+  Warning  Failed     2m49s <span style="color:#f92672">(</span>x6 over 4m30s<span style="color:#f92672">)</span>  kubelet, docker-desktop  Error: ImagePullBackOff
+  Normal   BackOff    2m35s <span style="color:#f92672">(</span>x7 over 4m30s<span style="color:#f92672">)</span>  kubelet, docker-desktop  Back-off pulling image <span style="color:#e6db74">&#34;hello-go&#34;</span>
+</code></pre></div><p>Lets edit the config and replace <code>imagePullPolicy: Always</code> to <code>imagePullPolicy: IfNotPresent</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl edit deployment hello-go
+</code></pre></div><p>As soon as you save it kubernetes will reload the config file and attempt to start the pod.  Lets
+see if the pod is running now:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get pods
+NAME                        READY   STATUS    RESTARTS   AGE
+hello-go-697976685b-qhsxq   1/1     Running   <span style="color:#ae81ff">0</span>          9s
+</code></pre></div><p>Success!</p>
+<p>Now lets tell kubernetes to expose this port outside the cluster:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl expose deployment hello-go --type<span style="color:#f92672">=</span>LoadBalancer --port<span style="color:#f92672">=</span><span style="color:#ae81ff">8180</span>
+</code></pre></div><p>Now lets check the status to make sure our service is up and running:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -I localhost:8180
+HTTP/1.1 <span style="color:#ae81ff">200</span> OK
+Date: Wed, <span style="color:#ae81ff">15</span> Jul <span style="color:#ae81ff">2020</span> 13:38:12 GMT
+Content-Length: <span style="color:#ae81ff">23</span>
+Content-Type: text/plain; charset<span style="color:#f92672">=</span>utf-8
+
+curl -I localhost:8180/bla
+HTTP/1.1 <span style="color:#ae81ff">200</span> OK
+Date: Wed, <span style="color:#ae81ff">15</span> Jul <span style="color:#ae81ff">2020</span> 13:38:17 GMT
+Content-Length: <span style="color:#ae81ff">26</span>
+Content-Type: text/plain; charset<span style="color:#f92672">=</span>utf-8
+</code></pre></div><p>To get the logs of our single pod you can do:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl logs -l app<span style="color:#f92672">=</span>hello-go
+2020/07/15 13:38:12 recieved request <span style="color:#66d9ef">for</span> path: /
+2020/07/15 13:38:17 recieved request <span style="color:#66d9ef">for</span> path: /bla
+</code></pre></div><p>Now lets scale the hello-go service to 2 containers running:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl scale deployments/hello-go --replicas<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>
+</code></pre></div><p>Now you can see we have 2 pods running:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get deployment hello-go
+NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+hello-go   2/2     <span style="color:#ae81ff">2</span>            <span style="color:#ae81ff">2</span>           21m
+kubectl get pods
+NAME                        READY   STATUS    RESTARTS   AGE
+hello-go-697976685b-qhsxq   1/1     Running   <span style="color:#ae81ff">0</span>          9m59s
+hello-go-697976685b-zvxfs   1/1     Running   <span style="color:#ae81ff">0</span>          15s
+</code></pre></div><p>Now lets cleanup our testing go container from the kubernetes cluster:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl delete service hello-go
+kubectl delete deployment hello-go
+</code></pre></div><p>check the status:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get pods
+NAME                        READY   STATUS        RESTARTS   AGE
+hello-go-697976685b-qhsxq   0/1     Terminating   <span style="color:#ae81ff">0</span>          14m
+hello-go-697976685b-zvxfs   0/1     Terminating   <span style="color:#ae81ff">0</span>          4m49s
+kubectl get pods
+NAME                        READY   STATUS        RESTARTS   AGE
+hello-go-697976685b-qhsxq   0/1     Terminating   <span style="color:#ae81ff">0</span>          14m
+hello-go-697976685b-zvxfs   0/1     Terminating   <span style="color:#ae81ff">0</span>          4m52s
+kubectl get pods
+No resources found.
+</code></pre></div><p>remove our docker image:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker rmi hello-go
+Untagged: hello-go:latest
+Deleted: sha256:91531928fd1bd3215c2d3e8f47c687403a4e26a816aeefbcef8e2ae20cee3c25
+Deleted: sha256:4212a43d83ece3f23c6cb26492232fce53940e96a315ac90099e2327889539f0
+Deleted: sha256:e7490e0492db45ed5df40a2b9b087ee2b0d9e0609c39036f2d076e2edbb052f1
+Deleted: sha256:e5e59395d3aa48f4227eaea4a1eab4174657a0a16bbc19103fe5bf53ef49138b
+</code></pre></div><h2 id="now-lets-connect-ansible-to-our-kubernetes-cluster">Now lets connect ansible to our kubernetes cluster</h2>
+<p>first thing is to create an <code>inventory</code> file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>localhost<span style="color:#f92672">]</span>
+127.0.0.1 ansible_connection<span style="color:#f92672">=</span>local
+</code></pre></div><p>now lets create a script that will get the uptime of our local machine <code>main.yml</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">---
+- <span style="color:#66d9ef">hosts</span>: localhost
+  <span style="color:#66d9ef">gather_facts </span>: <span style="color:#66d9ef">false</span>
+
+  <span style="color:#66d9ef">tasks</span>:
+  - <span style="color:#66d9ef">name</span>: get current uptime
+    <span style="color:#66d9ef">command</span>: uptime
+    <span style="color:#66d9ef">register</span>: uptime
+    <span style="color:#66d9ef">changed_when</span>: <span style="color:#66d9ef">false</span>
+
+  - <span style="color:#66d9ef">name</span>: print current uptime
+    <span style="color:#66d9ef">debug</span>:
+      <span style="color:#66d9ef">msg</span>: <span style="color:#e6db74">&#34;{{ uptime.stdout }}&#34;</span>
+</code></pre></div><p>Test our ansible setup:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible-playbook -i inventory main.yml
+
+PLAY <span style="color:#f92672">[</span>localhost<span style="color:#f92672">]</span> ******************************************************************************************************************************************************************************************************************************************
+
+TASK <span style="color:#f92672">[</span>get current uptime<span style="color:#f92672">]</span> *********************************************************************************************************************************************************************************************************************************
+<span style="color:#f92672">[</span>WARNING<span style="color:#f92672">]</span>: Platform darwin on host 127.0.0.1 is using the discovered Python interpreter at /usr/bin/python, but future installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html <span style="color:#66d9ef">for</span> more information.
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+TASK <span style="color:#f92672">[</span>print current uptime<span style="color:#f92672">]</span> *******************************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34;17:16  up 36 days,  3:51, 4 users, load averages: 2.38 2.37 2.48&#34;</span>
+<span style="color:#f92672">}</span>
+
+PLAY RECAP ************************************************************************************************************************************************************************************************************************************************
+127.0.0.1                  : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</code></pre></div><p>So the first thing we need to do is build our docker container in ansible now.  We will setup a var
+in order to track the hash of our container.  This way we can build it only when the image does not
+exist on our local system.  I will also introduce <code>tags</code> where you can specify a subset of commands
+to run.  Change your main.yml to this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">---
+
+- <span style="color:#66d9ef">hosts</span>: localhost
+  <span style="color:#66d9ef">gather_facts </span>: <span style="color:#66d9ef">false</span>
+
+  <span style="color:#66d9ef">vars</span>:
+    <span style="color:#66d9ef">image_name </span>: hello-go
+
+  <span style="color:#66d9ef">tasks</span>:
+  - <span style="color:#66d9ef">name</span>: get current uptime
+    <span style="color:#66d9ef">command</span>: uptime
+    <span style="color:#66d9ef">register</span>: uptime
+    <span style="color:#66d9ef">changed_when</span>: <span style="color:#66d9ef">false</span>
+    <span style="color:#66d9ef">tags</span>: uptime
+
+  - <span style="color:#66d9ef">name</span>: print current uptime
+    <span style="color:#66d9ef">debug</span>:
+      <span style="color:#66d9ef">msg</span>: <span style="color:#e6db74">&#34;{{ uptime.stdout }}&#34;</span>
+    <span style="color:#66d9ef">tags</span>: uptime
+
+  - <span style="color:#66d9ef">name</span>: print current docker container name
+    <span style="color:#66d9ef">debug</span>:
+      <span style="color:#66d9ef">msg</span>: <span style="color:#e6db74">&#34; {{ image_name }} &#34;</span>
+    <span style="color:#66d9ef">tags</span>: docker_build
+
+  - <span style="color:#66d9ef">name</span>: get the exiting hash of our docker container if it is built
+    <span style="color:#66d9ef">shell</span>: <span style="color:#e6db74">|
+</span><span style="color:#e6db74">     docker images -q {{ image_name }}</span>
+    <span style="color:#66d9ef">register</span>: image_hash
+    <span style="color:#66d9ef">changed_when</span>: <span style="color:#66d9ef">false</span>
+    <span style="color:#66d9ef">tags</span>: docker_build
+
+  - <span style="color:#66d9ef">name</span>: print current image hash
+    <span style="color:#66d9ef">debug</span>:
+      <span style="color:#66d9ef">msg</span>: <span style="color:#e6db74">&#34;{{ image_hash.stdout }}&#34;</span>
+    <span style="color:#66d9ef">tags</span>: docker_build
+
+  - <span style="color:#66d9ef">name</span>: Build our hello-go docker container
+    <span style="color:#66d9ef">shell</span>: <span style="color:#e6db74">|
+</span><span style="color:#e6db74">      docker build -t {{ image_name }} ../cmd/hello/</span>
+    <span style="color:#66d9ef">when</span>: not image_hash.stdout
+    <span style="color:#66d9ef">tags</span>: docker_build
+</code></pre></div><p>With tags I can specify a single tag to run:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible-playbook -i inventory main.yml --tags <span style="color:#e6db74">&#34;uptime&#34;</span>
+
+PLAY <span style="color:#f92672">[</span>localhost<span style="color:#f92672">]</span> ******************************************************************************************************************************************************************************************************************************************
+
+TASK <span style="color:#f92672">[</span>get current uptime<span style="color:#f92672">]</span> *********************************************************************************************************************************************************************************************************************************
+<span style="color:#f92672">[</span>WARNING<span style="color:#f92672">]</span>: Platform darwin on host 127.0.0.1 is using the discovered Python interpreter at /usr/bin/python, but future installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html <span style="color:#66d9ef">for</span> more information.
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+TASK <span style="color:#f92672">[</span>print current uptime<span style="color:#f92672">]</span> *******************************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34;20:36  up 36 days,  7:11, 4 users, load averages: 3.01 3.13 3.05&#34;</span>
+<span style="color:#f92672">}</span>
+
+PLAY RECAP ************************************************************************************************************************************************************************************************************************************************
+127.0.0.1                  : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</code></pre></div><p>Now lets only run our <code>docker _build</code> tags:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible-playbook -i inventory main.yml --tags <span style="color:#e6db74">&#34;docker_build&#34;</span>
+
+PLAY <span style="color:#f92672">[</span>localhost<span style="color:#f92672">]</span> ******************************************************************************************************************************************************************************************************************************************
+
+TASK <span style="color:#f92672">[</span>print current docker container name<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34; hello-go &#34;</span>
+<span style="color:#f92672">}</span>
+
+TASK <span style="color:#f92672">[</span>get the exiting hash of our docker container <span style="color:#66d9ef">if</span> it is built<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************
+<span style="color:#f92672">[</span>WARNING<span style="color:#f92672">]</span>: Platform darwin on host 127.0.0.1 is using the discovered Python interpreter at /usr/bin/python, but future installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html <span style="color:#66d9ef">for</span> more information.
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+TASK <span style="color:#f92672">[</span>print current image hash<span style="color:#f92672">]</span> ***************************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>
+<span style="color:#f92672">}</span>
+
+TASK <span style="color:#f92672">[</span>Build our hello-go docker container<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************************************
+changed: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+PLAY RECAP ************************************************************************************************************************************************************************************************************************************************
+127.0.0.1                  : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</code></pre></div><p>You can see that 1 was changed because it did not find the hash of the container.  Now if you run it
+again you will see it skip the build:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible-playbook -i inventory main.yml --tags <span style="color:#e6db74">&#34;docker_build&#34;</span>
+
+PLAY <span style="color:#f92672">[</span>localhost<span style="color:#f92672">]</span> ******************************************************************************************************************************************************************************************************************************************
+
+TASK <span style="color:#f92672">[</span>print current docker container name<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34; hello-go &#34;</span>
+<span style="color:#f92672">}</span>
+
+TASK <span style="color:#f92672">[</span>get the exiting hash of our docker container <span style="color:#66d9ef">if</span> it is built<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************
+<span style="color:#f92672">[</span>WARNING<span style="color:#f92672">]</span>: Platform darwin on host 127.0.0.1 is using the discovered Python interpreter at /usr/bin/python, but future installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html <span style="color:#66d9ef">for</span> more information.
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+TASK <span style="color:#f92672">[</span>print current image hash<span style="color:#f92672">]</span> ***************************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34;563c1408fa75&#34;</span>
+<span style="color:#f92672">}</span>
+
+TASK <span style="color:#f92672">[</span>Build our hello-go docker container<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************************************
+skipping: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+PLAY RECAP ************************************************************************************************************************************************************************************************************************************************
+127.0.0.1                  : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</code></pre></div><p>You can also &ldquo;skip&rdquo; tags:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible-playbook -i inventory main.yml --skip-tags <span style="color:#e6db74">&#34;uptime&#34;</span>
+
+PLAY <span style="color:#f92672">[</span>localhost<span style="color:#f92672">]</span> ******************************************************************************************************************************************************************************************************************************************
+
+TASK <span style="color:#f92672">[</span>print current docker container name<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34; hello-go &#34;</span>
+<span style="color:#f92672">}</span>
+
+TASK <span style="color:#f92672">[</span>get the exiting hash of our docker container <span style="color:#66d9ef">if</span> it is built<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************
+<span style="color:#f92672">[</span>WARNING<span style="color:#f92672">]</span>: Platform darwin on host 127.0.0.1 is using the discovered Python interpreter at /usr/bin/python, but future installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html <span style="color:#66d9ef">for</span> more information.
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+TASK <span style="color:#f92672">[</span>print current image hash<span style="color:#f92672">]</span> ***************************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34;563c1408fa75&#34;</span>
+<span style="color:#f92672">}</span>
+
+TASK <span style="color:#f92672">[</span>Build our hello-go docker container<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************************************
+skipping: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+PLAY RECAP ************************************************************************************************************************************************************************************************************************************************
+127.0.0.1                  : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</code></pre></div><p>You can also group tasks together if want.  This will run this entire playbook but on bigger
+playbooks this is very useful:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"> ansible-playbook -i inventory main.yml --tags <span style="color:#e6db74">&#34;docker_build,uptime&#34;</span>
+
+PLAY <span style="color:#f92672">[</span>localhost<span style="color:#f92672">]</span> ******************************************************************************************************************************************************************************************************************************************
+
+TASK <span style="color:#f92672">[</span>get current uptime<span style="color:#f92672">]</span> *********************************************************************************************************************************************************************************************************************************
+<span style="color:#f92672">[</span>WARNING<span style="color:#f92672">]</span>: Platform darwin on host 127.0.0.1 is using the discovered Python interpreter at /usr/bin/python, but future installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html <span style="color:#66d9ef">for</span> more information.
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+TASK <span style="color:#f92672">[</span>print current uptime<span style="color:#f92672">]</span> *******************************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34;20:41  up 36 days,  7:16, 4 users, load averages: 2.18 2.86 2.95&#34;</span>
+<span style="color:#f92672">}</span>
+
+TASK <span style="color:#f92672">[</span>print current docker container name<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34; hello-go &#34;</span>
+<span style="color:#f92672">}</span>
+
+TASK <span style="color:#f92672">[</span>get the exiting hash of our docker container <span style="color:#66d9ef">if</span> it is built<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+TASK <span style="color:#f92672">[</span>print current image hash<span style="color:#f92672">]</span> ***************************************************************************************************************************************************************************************************************************
+ok: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span>&gt; <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;msg&#34;</span>: <span style="color:#e6db74">&#34;563c1408fa75&#34;</span>
+<span style="color:#f92672">}</span>
+
+TASK <span style="color:#f92672">[</span>Build our hello-go docker container<span style="color:#f92672">]</span> ****************************************************************************************************************************************************************************************************************
+skipping: <span style="color:#f92672">[</span>127.0.0.1<span style="color:#f92672">]</span>
+
+PLAY RECAP ************************************************************************************************************************************************************************************************************************************************
+127.0.0.1                  : ok<span style="color:#f92672">=</span><span style="color:#ae81ff">5</span>    changed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    unreachable<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    failed<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    skipped<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>    rescued<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</code></pre></div><p>Now we are going to write some kubernetes inside ansible.  More information about this module can be
+found <a href="https://docs.ansible.com/ansible/latest/modules/k8s_module.html">here.</a></p>
+
+</article>
+
+
+
+</body>
+
+</html>

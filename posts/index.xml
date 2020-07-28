@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Dan Sheffner Tech Info</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 02 Jul 2020 00:12:03 -0500</lastBuildDate>
+    <lastBuildDate>Sun, 12 Jul 2020 16:48:17 -0500</lastBuildDate>
     
 	<atom:link href="https://tech.sheffner.com/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Ansible Kubernetes basics (WIP)</title>
+      <link>https://tech.sheffner.com/posts/2020-07-12-ansible-kubernetes/</link>
+      <pubDate>Sun, 12 Jul 2020 16:48:17 -0500</pubDate>
+      
+      <guid>https://tech.sheffner.com/posts/2020-07-12-ansible-kubernetes/</guid>
+      <description>This will start to show you how to use ansible and kubernetes clusters together prior setup You will need to get kubernetes installed correctly on your a machine. This is fairly easy to do on each system but it is depending on your operating systems. You can find more info about install kubernetes here. You should be able to run this and get the versions:
+kubectl version Client Version: version.Info{Major:&amp;#34;1&amp;#34;, Minor:&amp;#34;15&amp;#34;, GitVersion:&amp;#34;v1.</description>
+    </item>
     
     <item>
       <title>Vim Shortcuts</title>
